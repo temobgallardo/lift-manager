@@ -1,15 +1,5 @@
-﻿// var builder = ConsoleApplication.CreateBuilder(args);
-
-// var builder = new ConfigurationBuilder()
-//     .SetBasePath(Directory.GetCurrentDirectory())
-//     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-//     .AddEnvironmentVariables()
-//     .AddCommandLine(args);
-
-// IConfiguration configuration = builder.Build();
-
-
-using LiftManager;
+﻿using LiftManager;
+using LiftManager.Workers;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
@@ -25,6 +15,7 @@ Log.Logger = new LoggerConfiguration()
 IConfigurationRoot config = new ConfigurationBuilder()
     .AddJsonFile("appsettings.json")
     .AddEnvironmentVariables()
+    .AddCommandLine(args)
     .Build();
 
 var appSettings = config.GetSection(nameof(AppSettings)).Get<AppSettings>();
@@ -33,18 +24,13 @@ var builder = Host.CreateDefaultBuilder(args)
     .UseSerilog()
     .ConfigureServices(services =>
     {
-        //   services.AddSingleton<IRequestMatrixService, RequestMatrixService>();
-        //   services.AddSingleton<IRequestWordsToSearchService, RequestWordsToSearchService>();
-        //   services.AddSingleton<ITrie<string>, Trie>();
-        //   services.AddScoped<IWordFinder, WordFinder.WordFinder>();
-        //   services.AddHostedService<WordFinderWorker>();
         services.AddScoped<IAppSettings>((sp) => appSettings);
+        services.AddHostedService<LiftManagerWorker>();
     })
     .ConfigureAppConfiguration(c =>
     {
         c.AddConfiguration(config);
     });
-
 
 using IHost host = builder.Build();
 await host.RunAsync();
