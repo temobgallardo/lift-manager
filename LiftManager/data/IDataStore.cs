@@ -1,4 +1,4 @@
-namespace LiftManager.data;
+namespace LiftManager.Data;
 
 public interface IDataStore
 {

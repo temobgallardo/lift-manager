@@ -1,4 +1,4 @@
-using LiftManager.domain.enums;
+using LiftManager.Domain.Enums;
 
 namespace LiftManager.Workers;
 
