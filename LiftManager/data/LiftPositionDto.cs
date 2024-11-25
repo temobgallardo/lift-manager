@@ -1,10 +1,9 @@
-namespace LiftManager.data;
+namespace LiftManager.Data;
 
 /// <summary>
 /// 
 /// </summary>
 /// <param name="Id"></param>
-/// <param name="CurrentPosition"></param>
 /// <param name="SourceFloor"></param>
 /// <param name="DestinationFloor">Null means no destination at the moment</param>
-public record class LiftPositionDto(int Id, int CurrentPosition, int SourceFloor, int? DestinationFloor);
+public record class LiftPositionDto(int Id, int SourceFloor, int? DestinationFloor);
