@@ -1,7 +1,8 @@
-namespace LiftManager.domain.enums;
+namespace LiftManager.Domain.Enums;
 
 public enum Direction
 {
-  Up = 1,
-  Down = 0,
+  None = 0,
+  Down = 1,
+  Up = 2,
 }

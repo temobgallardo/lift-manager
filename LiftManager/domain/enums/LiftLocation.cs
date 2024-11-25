@@ -1,4 +1,4 @@
-namespace LiftManager.domain.enums;
+namespace LiftManager.Domain.Enums;
 
 public enum LiftLocation
 {
