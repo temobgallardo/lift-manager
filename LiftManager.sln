@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiftManager", "LiftManager\LiftManager.csproj", "{2A382B0C-0B90-4A5B-8FF3-0F8FAA08FCB7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiftManagerTests", "LiftManagerTests\LiftManagerTests.csproj", "{62DC6A8F-D9A5-4133-BFB2-B23F6C255007}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{2A382B0C-0B90-4A5B-8FF3-0F8FAA08FCB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A382B0C-0B90-4A5B-8FF3-0F8FAA08FCB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A382B0C-0B90-4A5B-8FF3-0F8FAA08FCB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62DC6A8F-D9A5-4133-BFB2-B23F6C255007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62DC6A8F-D9A5-4133-BFB2-B23F6C255007}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62DC6A8F-D9A5-4133-BFB2-B23F6C255007}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62DC6A8F-D9A5-4133-BFB2-B23F6C255007}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
