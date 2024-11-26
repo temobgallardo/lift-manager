@@ -11,9 +11,9 @@ public class Operator(IRepository repository, ILogger logger, IAppSettings appSe
 
   public async Task<bool> LiftToFloor(int destinationFloor)
   {
-    if (destinationFloor < 0 && destinationFloor >= _appSettings.NumberOfFloors)
+    if (destinationFloor < _appSettings.InitialFloor || destinationFloor >= _appSettings.NumberOfFloors)
     {
-      _logger?.LogInformation($"Invalid Destinatio Floor={destinationFloor}. Cancelling operation");
+      _logger?.LogError(new Exception(), $"Invalid Destinatio Floor | Destinatio Floor={destinationFloor} is out of boundaries [{_appSettings.InitialFloor}, {_appSettings.NumberOfFloors}]. Cancelling operation...");
       return false;
     }
 
@@ -22,12 +22,14 @@ public class Operator(IRepository repository, ILogger logger, IAppSettings appSe
     if (liftPosition is null)
     {
       _logger?.LogInformation($"No Lift Positioin Available in the DB");
+      return false;
     }
 
-    if (liftPosition!.Source == destinationFloor)
+    _logger?.LogTrace($"Moving to floor: Source Position = {liftPosition.SourceFloor} | Destination Position = {liftPosition.DestinationFloor}");
+
+    if (liftPosition!.SourceFloor == destinationFloor)
     {
-      _logger?.LogTrace($"Moving to floor: Source Position = {liftPosition.Source} | Destination Position = {liftPosition.Destination}");
-      return await Task.FromResult(true);
+      return true;
     }
 
     return await _repository!.SaveLiftPosition(new LiftPosition(liftPosition.Id + 1, destinationFloor, destinationFloor));
@@ -38,7 +40,7 @@ public class Operator(IRepository repository, ILogger logger, IAppSettings appSe
   {
     _logger?.LogTrace("Stopping lift");
     await Task.Delay(500);
-    return await Task.FromResult(true);
+    return true;
   }
 
   public void Dispose()
