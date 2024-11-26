@@ -1,14 +1,15 @@
 using AutoFixture;
+using AutoFixture.AutoMoq;
 using FluentAssertions;
 using LiftManager;
 using LiftManager.Core;
 using LiftManager.Domain;
-using Microsoft.Extensions.Logging;
+using LiftManager.Domain.Data;
 using Moq;
 
 namespace LiftManagerTests;
 
-public class Operator_Tests : IClassFixture<Operator>
+public class Operator_Tests
 {
     private readonly IFixture _fixture;
     private readonly Mock<IRepository> _repositoryMock;
@@ -18,7 +19,8 @@ public class Operator_Tests : IClassFixture<Operator>
 
     public Operator_Tests()
     {
-        _fixture = new Fixture();
+        _fixture = new Fixture()
+            .Customize(new AutoMoqCustomization()); ;
 
         // Mock the dependencies
         _repositoryMock = _fixture.Freeze<Mock<IRepository>>();
@@ -27,24 +29,25 @@ public class Operator_Tests : IClassFixture<Operator>
 
         // Setup IAppSettings mock to return a valid number of floors
         _appSettingsMock.Setup(a => a.NumberOfFloors).Returns(10);
+        _appSettingsMock.Setup(a => a.InitialFloor).Returns(0);
 
         // Create the Operator instance
         _operator = new Operator(_repositoryMock.Object, _loggerMock.Object, _appSettingsMock.Object);
     }
-
 
     [Fact]
     public async Task LiftToFloor_Should_Log_InvalidDestination_If_InvalidFloor()
     {
         // Arrange
         int invalidDestinationFloor = -1;
+        _repositoryMock.Setup(a => a.GetLiftPosition()).ReturnsAsync(_fixture.Create<LiftPosition>());
 
         // Act
         var result = await _operator.LiftToFloor(invalidDestinationFloor);
 
         // Assert
         result.Should().BeFalse();
-        _loggerMock.Verify(logger => logger.LogInformation(It.Is<string>(s => s.Contains("Invalid Destinatio Floor"))), Times.Once);
+        _loggerMock.Verify(logger => logger.LogError(It.IsAny<Exception>(), It.Is<string>(s => s.Contains("Invalid Destinatio Floor"))), Times.Once);
     }
 
     [Fact]
@@ -77,7 +80,7 @@ public class Operator_Tests : IClassFixture<Operator>
 
         // Assert
         result.Should().BeTrue();
-        _repositoryMock.Verify(r => r.SaveLiftPosition(It.Is<LiftPosition>(lp => lp.Destination == destinationFloor)), Times.Once);
+        _repositoryMock.Verify(r => r.SaveLiftPosition(It.Is<LiftPosition>(lp => lp.DestinationFloor == destinationFloor)), Times.Once);
     }
 
     [Fact]
