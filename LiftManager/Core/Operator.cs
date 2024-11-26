@@ -8,7 +8,7 @@ public class Operator(IRepository repository, ILogger logger, IAppSettings appSe
   private IAppSettings _appSettings = appSettings;
   private IRepository? _repository = repository;
 
-  public async Task<bool> MoveToFloor(int destinationFloor)
+  public async Task<bool> LiftToFloor(int destinationFloor)
   {
     if (destinationFloor < 0 && destinationFloor >= _appSettings.NumberOfFloors)
     {
