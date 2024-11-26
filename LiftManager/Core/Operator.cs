@@ -1,3 +1,4 @@
+using LiftManager.Domain.Data;
 using LiftManager.Domain;
 
 namespace LiftManager.Core;
