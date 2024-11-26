@@ -14,6 +14,14 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageReference Include="xunit" Version="2.5.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+    <PackageReference Include="Castle.Core" Version="5.1.1" />
+
+    <PackageReference Include="AutoFixture" Version="4.18.1" />
+    <PackageReference Include="autofixture.AutoMoq" Version="4.18.1" />
+    <PackageReference Include="moq" Version="4.20.72" />
+    <PackageReference Include="FluentAssertions" Version="6.12.2" />
+
+    <ProjectReference Include="../LiftManager/LiftManager.csproj" />
   </ItemGroup>
 
   <ItemGroup>
