@@ -35,11 +35,14 @@ public class Operator_Tests
         _operator = new Operator(_repositoryMock.Object, _loggerMock.Object, _appSettingsMock.Object);
     }
 
-    [Fact]
-    public async Task LiftToFloor_Should_Log_InvalidDestination_If_InvalidFloor()
+    [Theory]
+    [InlineData(-2)]
+    [InlineData(-1)]
+    [InlineData(10)]
+    [InlineData(100)]
+    public async Task LiftToFloor_Should_Log_InvalidDestination_If_InvalidFloor(int invalidDestinationFloor)
     {
         // Arrange
-        int invalidDestinationFloor = -1;
         _repositoryMock.Setup(a => a.GetLiftPosition()).ReturnsAsync(_fixture.Create<LiftPosition>());
 
         // Act
