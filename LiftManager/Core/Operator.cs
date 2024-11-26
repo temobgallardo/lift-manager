@@ -13,6 +13,7 @@ public class Operator(IRepository repository, ILogger logger, IAppSettings appSe
     if (destinationFloor < 0 && destinationFloor >= _appSettings.NumberOfFloors)
     {
       _logger?.LogInformation($"Invalid Destinatio Floor={destinationFloor}. Cancelling operation");
+      return false;
     }
 
     LiftPosition liftPosition = await GetLiftPosition();
