@@ -58,7 +58,7 @@ public class Operator_Tests
     {
         // Arrange
         int destinationFloor = 5;
-        var liftPosition = new LiftPosition(Id: 1, 5, 5);
+        var liftPosition = new LiftPosition(DateTime.Now, 5, 5);
         _repositoryMock.Setup(r => r.GetLiftPosition()).ReturnsAsync(liftPosition);
 
         // Act
@@ -74,7 +74,7 @@ public class Operator_Tests
     {
         // Arrange
         int destinationFloor = 7;
-        var liftPosition = new LiftPosition(1, 3, 3);
+        var liftPosition = new LiftPosition(DateTime.Now, 3, 3);
         _repositoryMock.Setup(r => r.GetLiftPosition()).ReturnsAsync(liftPosition);
         _repositoryMock.Setup(r => r.SaveLiftPosition(It.IsAny<LiftPosition>())).ReturnsAsync(true);
 
