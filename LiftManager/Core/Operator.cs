@@ -3,11 +3,18 @@ using LiftManager.Domain;
 
 namespace LiftManager.Core;
 
-public class Operator(IRepository repository, ILogger logger, IAppSettings appSettings) : IOperator
+public class Operator : IOperator
 {
-  private ILogger? _logger = logger;
-  private IAppSettings _appSettings = appSettings;
-  private IRepository? _repository = repository;
+  private ILogger? _logger;
+  private IAppSettings _appSettings;
+  private IRepository? _repository;
+
+  public Operator(IRepository repository, ILogger logger, IAppSettings appSettings)
+  {
+    _logger = logger;
+    _appSettings = appSettings;
+    _repository = repository;
+  }
 
   public async Task<bool> LiftToFloor(int destinationFloor)
   {
@@ -32,7 +39,7 @@ public class Operator(IRepository repository, ILogger logger, IAppSettings appSe
       return true;
     }
 
-    return await _repository!.SaveLiftPosition(new LiftPosition(liftPosition.Id + 1, destinationFloor, destinationFloor));
+    return await _repository!.SaveLiftPosition(new LiftPosition(DateTime.Now, destinationFloor, destinationFloor));
   }
 
   // TODO: Add functionality to make the model natural
