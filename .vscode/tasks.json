@@ -37,15 +37,5 @@
 			],
 			"problemMatcher": "$msCompile"
 		},
-		// {
-		// 	"type": "dotnet",
-		// 	"task": "build",
-		// 	"group": "build",
-		// 	"problemMatcher": [],
-		// 	"label": "dotnet: build",
-		// 	"args": [
-		// 		""
-		// 	]
-		// }
 	]
 }
