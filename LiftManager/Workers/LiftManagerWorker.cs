@@ -2,8 +2,12 @@ using LiftManager.Domain.Enums;
 
 namespace LiftManager.Workers;
 
-public class LiftManagerWorker(ILogger<LiftManagerWorker> logger, IConfiguration configuration) : WorkerBase(logger, configuration)
+public class LiftManagerWorker : WorkerBase
 {
+  public LiftManagerWorker(ILogger<WorkerBase> logger, IConfiguration configuration) : base(logger, configuration)
+  {
+  }
+
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
     Logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
@@ -23,7 +27,7 @@ public class LiftManagerWorker(ILogger<LiftManagerWorker> logger, IConfiguration
       return;
     }
 
-
+    Logger.LogInformation($"Args readed: {args}");
   }
 
   private void CheckIfOutsideLiftRequestAndOperate()
@@ -34,6 +38,8 @@ public class LiftManagerWorker(ILogger<LiftManagerWorker> logger, IConfiguration
     {
       return;
     }
+
+    Logger.LogInformation($"Args readed: {args}");
   }
 
   private string[]? GetArgs(string typeOfArgs) => Configuration[typeOfArgs]?.Split(',');
