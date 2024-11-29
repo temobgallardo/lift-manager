@@ -1,12 +1,19 @@
 namespace LiftManager.Core;
 
-public class Logger(Microsoft.Extensions.Logging.ILogger logger) : ILogger
+public class Logger : ILogger
 {
-  public void LogDebug(string message) => logger.LogDebug(message);
+  private readonly Serilog.ILogger _log;
 
-  public void LogError(Exception ex, string message) => logger.LogError(ex, message);
+  public Logger(Serilog.ILogger log)
+  {
+    _log = log;
+  }
 
-  public void LogInformation(string message) => logger.LogInformation(message);
+  public void LogDebug(string message) => _log.Debug(message);
 
-  public void LogTrace(string message) => logger.LogTrace(message);
+  public void LogError(Exception ex, string message) => _log.Error(ex, message);
+
+  public void LogInformation(string message) => _log.Information(message);
+
+  public void LogTrace(string message) => _log.Debug(message);
 }
