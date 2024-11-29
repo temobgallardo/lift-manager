@@ -1,7 +1,10 @@
+using LiftManager.Data.Dto;
+
 namespace LiftManager.Data;
 
-public interface IDataStore
+public interface IDataStore : IDisposable
 {
-  Task<LiftPositionDto> Read();
-  Task Write(LiftPositionDto liftPosition);
+  Task<bool> Save(LiftPositionDto toSave);
+  Task<LiftPositionDto> GetLatest();
+  Task<bool> Drop();
 }
