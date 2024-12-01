@@ -1,6 +1,6 @@
 namespace LiftManager.Domain.Enums;
 
-public enum LiftLocation
+public enum OperationType
 {
   None,
   Outside,
