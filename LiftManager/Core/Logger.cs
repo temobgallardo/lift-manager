@@ -9,11 +9,10 @@ public class Logger : ILogger
     _log = log;
   }
 
-  public void LogDebug(string message) => _log.Debug(message);
+  public void Debug(string message) => _log.Debug(message);
 
-  public void LogError(Exception ex, string message) => _log.Error(ex, message);
+  public void Error(Exception ex, string message) => _log.Error(ex, message);
 
-  public void LogInformation(string message) => _log.Information(message);
-
-  public void LogTrace(string message) => _log.Debug(message);
+  public void Information(string message) => _log.Information(message);
+  public void Information(string message, object o) => _log.Information(message, o);
 }

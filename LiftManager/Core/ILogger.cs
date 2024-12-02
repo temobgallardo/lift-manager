@@ -2,8 +2,8 @@ namespace LiftManager.Core;
 
 public interface ILogger
 {
-  void LogInformation(string message);
-  void LogTrace(string message);
-  void LogError(Exception ex, string message);
-  void LogDebug(string message);
+  void Debug(string message);
+  void Error(Exception ex, string message);
+  void Information(string message);
+  void Information(string message, object o);
 }
