@@ -1,3 +1,5 @@
+using LiftManager.Domain.Enums;
+
 namespace LiftManager.Data.Dto;
 
 /// <summary>
@@ -12,18 +14,25 @@ public record class LiftPositionDto : IComparable
   public DateTime RequestedDate { get; set; }
   public int SourceFloor { get; set; }
   public int? DestinationFloor { get; set; }
-  public LiftPositionDto(DateTime requestedDate, int sourceFloor, int? destinationFloor)
+  public OperationType OperationType { get; set; }
+
+  public LiftPositionDto(DateTime requestedDate, int sourceFloor, int? destinationFloor, OperationType operation)
   {
     RequestedDate = requestedDate;
     SourceFloor = sourceFloor;
     DestinationFloor = destinationFloor;
+    OperationType = operation;
   }
-  public LiftPositionDto(int sourceFloor, int? destinationFloor)
+
+  public LiftPositionDto(int sourceFloor, int? destinationFloor, OperationType operation)
   {
     RequestedDate = DateTime.Now;
     SourceFloor = sourceFloor;
     DestinationFloor = destinationFloor;
+    OperationType = operation;
   }
+  public LiftPositionDto()
+  { }
 
   public int CompareTo(object? obj)
   {
