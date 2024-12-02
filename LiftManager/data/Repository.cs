@@ -7,11 +7,13 @@ public class Repository : IRepository
 {
   private IDataStore _dataStore;
   private Core.ILogger _logger;
+  private bool _disposed = false;
 
   public Repository(IDataStore dataStore, Core.ILogger logger)
   {
     _dataStore = dataStore;
     _logger = logger;
+    _disposed = true;
   }
 
   public async Task<LiftPosition> GetCurrentLiftPosition()
@@ -29,8 +31,16 @@ public class Repository : IRepository
 
   public void Dispose()
   {
-    _dataStore.Dispose();
-    _dataStore = null;
-    _logger = null;
+    Dispose(_disposed);
+    GC.SuppressFinalize(this);
+  }
+  protected virtual void Dispose(bool disposing)
+  {
+    if (disposing)
+    {
+      _dataStore?.Dispose();
+      _logger = null;
+      _disposed = false;
+    }
   }
 }
