@@ -5,6 +5,7 @@ namespace LiftManager.Data;
 
 public class DataStore : IDataStore
 {
+  private bool _disposed = false;
   private LiftPositionDto _last;
   private IAppSettings _appSettings;
   /// <summary>
@@ -21,6 +22,7 @@ public class DataStore : IDataStore
     _liteDatabase = new Lazy<LiteDatabase>(CreateLiteDatabase);
     _queue = new(_appSettings.FilesForBulk);
     _logger = logger;
+    _disposed = true;
 
     NUMBER_FILES_FOR_BULK_INSERT = _appSettings.FilesForBulk;
   }
@@ -59,12 +61,25 @@ public class DataStore : IDataStore
 
   public void Dispose()
   {
+    // Making sure the cached operation are stored before the object is released.
+    SaveInBulk();
+
+    Dispose(_disposed);
     GC.SuppressFinalize(this);
-    _liteDatabase = null;
-    _appSettings = null;
-    _queue = null;
-    _logger = null;
-    _last = null;
+  }
+
+  protected virtual void Dispose(bool disposing)
+  {
+    if (disposing)
+    {
+      (_liteDatabase?.Value)?.Dispose();
+      _liteDatabase = null;
+      _appSettings = null;
+      _logger = null;
+      _queue = null;
+      _last = null;
+      _disposed = false;
+    }
   }
 
   public async Task Clear()
