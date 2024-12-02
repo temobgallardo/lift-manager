@@ -6,5 +6,10 @@ public interface IDataStore : IDisposable
 {
   Task<bool> Save(LiftPositionDto toSave);
   Task<LiftPositionDto> GetLatest();
-  Task<bool> Drop();
+  Task<bool> DeleteAll();
+  /// <summary>
+  /// Delete all the collectioins and internal files from the db
+  /// </summary>
+  /// <returns></returns>
+  Task Clear();
 }
