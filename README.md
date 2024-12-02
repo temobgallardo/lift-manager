@@ -9,6 +9,8 @@
 This was made into a Worker to emulate the behavior of a Lift and to test it run the following command:
 - dotnet run --project .\LiftManager\LiftManager.csproj --liftRequest="inside=1,outside=2,inside=3,outside=0" 
 
+![Artemio_Banos_LiftManager_Demo](https://github.com/user-attachments/assets/e62b0fde-0d09-461c-b2be-8916721f8160)
+
 
 ### Tech stack used
 - LiteDb: No-SQL lite database for small applications
