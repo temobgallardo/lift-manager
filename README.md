@@ -9,6 +9,10 @@
 This was made into a Worker to emulate the behavior of a Lift and to test it run the following command:
 - dotnet run --project ./LiftManager/LiftManager.csproj --liftRequest="outside=4,inside=1,outside=2,inside=3,outside=0" 
 
+where:
+outside is a request from 'outside' the lift to a given floor by an user
+inside is a request from 'inside' the lift to a given floor by an user
+
 ![Artemio_Banos_LiftManager_Demo](https://github.com/user-attachments/assets/e62b0fde-0d09-461c-b2be-8916721f8160)
 
 
