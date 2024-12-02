@@ -1,5 +1,6 @@
 using LiftManager.Domain.Data;
 using LiftManager.Domain;
+using LiftManager.Domain.Enums;
 
 namespace LiftManager.Core;
 
@@ -16,38 +17,75 @@ public class Operator : IOperator
     _repository = repository;
   }
 
-  public async Task<bool> LiftToFloor(int destinationFloor)
+  /// <summary>
+  /// This operations happens inside the lift when the user requests it to move to a floor
+  /// </summary>
+  /// <param name="floor">Floor where the lift will move</param>
+  /// <returns>True if operation was successfull, false otherwise</returns>
+  public async Task<bool> LiftToFloor(int floor)
   {
-    if (destinationFloor < _appSettings.InitialFloor || destinationFloor >= _appSettings.NumberOfFloors)
+    if (floor < _appSettings.InitialFloor || floor >= _appSettings.NumberOfFloors)
     {
-      _logger?.LogError(new Exception(), $"Invalid Destinatio Floor | Destinatio Floor={destinationFloor} is out of boundaries [{_appSettings.InitialFloor}, {_appSettings.NumberOfFloors}]. Cancelling operation...");
+      _logger?.Error(new Exception(), $"Invalid Destinatio Floor | Destinatio Floor={floor} is out of boundaries [{_appSettings.InitialFloor}, {_appSettings.NumberOfFloors}]. Cancelling operation...");
       return false;
     }
 
-    LiftPosition liftPosition = await GetLiftPosition();
+    LiftPosition currentPosition = await GetLiftPosition();
 
-    if (liftPosition is null)
+    if (currentPosition is null)
     {
-      _logger?.LogInformation($"No Lift Positioin Available in the DB");
+      _logger?.Debug($"No Lift Positioin Available in the DB. Moving to floor={floor}");
+      // Initial position of lift is at the bottom (floor 0)
+      return await _repository!.SaveLiftPosition(new LiftPosition(DateTime.Now, _appSettings.InitialFloor, floor, OperationType.Inside));
+    }
+
+    var placeHolder = "{@LiftPosition}";
+    _logger?.Information($"Moving from floor: {placeHolder} to {floor}", currentPosition);
+
+    if (currentPosition!.SourceFloor == floor)
+    {
+      _logger?.Debug($"Lift stays in same floor as destination is current floor");
       return false;
     }
 
-    _logger?.LogTrace($"Moving to floor: Source Position = {liftPosition.SourceFloor} | Destination Position = {liftPosition.DestinationFloor}");
-
-    if (liftPosition!.SourceFloor == destinationFloor)
-    {
-      return true;
-    }
-
-    return await _repository!.SaveLiftPosition(new LiftPosition(DateTime.Now, destinationFloor, destinationFloor));
+    return await _repository!.SaveLiftPosition(new LiftPosition(DateTime.Now, currentPosition.DestinationFloor!.Value, floor, OperationType.Inside));
   }
 
-  // TODO: Add functionality to make the model natural
   public async Task<bool> Stop()
   {
-    _logger?.LogTrace("Stopping lift");
+    _logger?.Debug("Stopping lift");
     await Task.Delay(500);
     return true;
+  }
+
+  /// <summary>
+  /// This operation happens when user is outside the lift and request it
+  /// </summary>
+  /// <param name="floor">Floor where the lift will move</param>
+  /// <returns>True if operation was successfull, false otherwise</returns>
+  public async Task<bool> RequestLiftToFloor(int floor)
+  {
+    if (floor < _appSettings.InitialFloor || floor > _appSettings.NumberOfFloors)
+    {
+      _logger?.Information($"Floor requested '{floor}' is out of range [{_appSettings.InitialFloor}, {_appSettings.NumberOfFloors}]");
+      return false;
+    }
+
+    LiftPosition actualFloor = await GetLiftPosition();
+    if (actualFloor is null)
+    {
+      return await SimulateAndSaveLift(_appSettings.InitialFloor, floor);
+    }
+
+    return await SimulateAndSaveLift(actualFloor.DestinationFloor!.Value, floor);
+  }
+
+  private async Task<bool> SimulateAndSaveLift(int sourceFloor, int destinationFloor)
+  {
+    _logger?.Debug($"Requesting lift to floor={destinationFloor} | current floor={sourceFloor}");
+    LiftPosition newFloorRequest = new(DateTime.Now, sourceFloor, destinationFloor, OperationType.Outside);
+    await SimulateLiftMovement(newFloorRequest);
+    return await _repository.SaveLiftPosition(newFloorRequest);
   }
 
   public void Dispose()
@@ -62,14 +100,25 @@ public class Operator : IOperator
   {
     try
     {
-      return await _repository?.GetLiftPosition();
+      return await _repository?.GetCurrentLiftPosition();
     }
     catch (Exception e)
     {
-      _logger?.LogError(e, $"Issue while retrieving the saved lift position | Message: {e.Message}");
+      _logger?.Error(e, $"Issue while retrieving the saved lift position | Message: {e.Message}");
     }
 
     return null;
   }
 
+  private async Task SimulateLiftMovement(LiftPosition floorRequested)
+  {
+    for (int f = floorRequested.SourceFloor; f != floorRequested.DestinationFloor;)
+    {
+      await Task.Delay(_appSettings.TravelSimulationTime);
+      _logger?.Information($"Lift on floor number={f}");
+      f = floorRequested.SourceFloor > floorRequested.DestinationFloor ? f - 1 : f + 1;
+    }
+
+    _logger.Information($"Opening the lift door in floor number = {floorRequested.DestinationFloor}");
+  }
 }
