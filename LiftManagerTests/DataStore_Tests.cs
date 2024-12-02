@@ -4,6 +4,7 @@ using FluentAssertions;
 using LiftManager;
 using LiftManager.Data;
 using LiftManager.Data.Dto;
+using LiftManager.Domain.Enums;
 using LiteDB;
 using Moq;
 
@@ -25,18 +26,6 @@ public class DataStore_Tests : IDisposable
     _appSettingsMock.Setup(x => x.FilesForBulk).Returns(10);
   }
 
-  /// <summary>
-  /// Need to create a fresh data base to test avoid test data infection
-  /// </summary>
-  /// <param name="dbname"></param>
-  private void CreateNewDb(string dbname)
-  {
-    var databaseDirectory = Path.Combine(Directory.GetCurrentDirectory(), $"TestDatabase{dbname}.db");
-    _appSettingsMock.Setup(x => x.DatabaseDirectory).Returns(databaseDirectory);
-
-    _dataStore = new DataStore(_appSettingsMock.Object, _loggerMock.Object);
-  }
-
   [Fact]
   public async Task GetLatest_ShouldReturnLatestLiftPositionDto()
   {
@@ -47,6 +36,7 @@ public class DataStore_Tests : IDisposable
     var data = _fixture.Build<LiftPositionDto>()
       .With(x => x.Id, 0)
       .With(x => x.RequestedDate, DateTime.Now)
+      .With(x => x.OperationType, OperationType.Inside)
       .CreateMany(20);
     var expected = data.Last();
 
@@ -62,7 +52,7 @@ public class DataStore_Tests : IDisposable
     actual.Id.Should().NotBe(0);
     actual.SourceFloor.Should().Be(expected.SourceFloor);
     actual.DestinationFloor.Should().Be(expected.DestinationFloor);
-    _loggerMock.Verify(x => x.LogTrace(It.IsAny<string>()), Times.AtLeast(20));
+    _loggerMock.Verify(x => x.Information(It.IsAny<string>(), It.IsAny<object>()), Times.AtLeast(20));
   }
 
   [Fact]
@@ -77,7 +67,7 @@ public class DataStore_Tests : IDisposable
 
     // Assert
     result.Should().BeTrue();
-    _loggerMock.Verify(x => x.LogTrace(It.IsAny<string>()), Times.Once);
+    _loggerMock.Verify(x => x.Information(It.IsAny<string>(), It.IsAny<object>()), Times.Once);
   }
 
   [Fact]
@@ -96,14 +86,16 @@ public class DataStore_Tests : IDisposable
 
     // Assert
     result.Should().BeTrue();
-    _loggerMock.Verify(x => x.LogTrace(It.Is<string>(s => s.Contains("Inserting bulk"))), Times.AtLeast(1));
+    _loggerMock.Verify(x => x.Information(It.Is<string>(s => s.Contains("Inserting bulk")), It.IsAny<object>()), Times.AtLeast(1));
   }
 
   [Fact]
   public void CreateLiteDatabase_ShouldInitializeDatabaseAndEnsureIndices()
   {
-    // Act
+    // Arrange
     CreateNewDb("4");
+
+    // Act
     var result = _dataStore.GetType()
         .GetMethod("CreateLiteDatabase", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
         ?.Invoke(_dataStore, null) as LiteDatabase;
@@ -112,10 +104,49 @@ public class DataStore_Tests : IDisposable
     result.Should().NotBeNull();
   }
 
+  [Fact]
+  public async Task GetLatest_ShouldGetRightLatestRequest_EvenIfNoInDb_ButInCache()
+  {
+    CreateNewDb("5");
+    var actualLiftRequests = _fixture.Build<LiftPositionDto>()
+    .With(x => x.Id, 0)
+    .With(x => x.RequestedDate, DateTime.Now)
+    .CreateMany(88);
+
+    // Act
+    foreach (var d in actualLiftRequests)
+    {
+      await _dataStore.Save(d);
+    }
+
+    var result = await _dataStore.GetLatest();
+
+    // Assert
+    result.Should().NotBeNull();
+    result.Id.Should().Be(actualLiftRequests.LastOrDefault().Id);
+    result.SourceFloor.Should().Be(actualLiftRequests.LastOrDefault().SourceFloor);
+    result.DestinationFloor.Should().Be(actualLiftRequests.LastOrDefault().DestinationFloor);
+  }
+
   public void Dispose()
   {
-    _dataStore.Drop();
+    _dataStore.DeleteAll();
+    _dataStore.Clear();
     _dataStore.Dispose();
     _dataStore = null;
+    // TODO: Clean out db file securely, below throws a IOException because of file being used by another process
+    // File.Delete(_appSettingsMock.Object.DatabaseDirectory);
+  }
+
+  /// <summary>
+  /// Need to create a fresh data base to test avoid test data infection
+  /// </summary>
+  /// <param name="dbname"></param>
+  private void CreateNewDb(string dbname)
+  {
+    var databaseDirectory = Path.Combine(Directory.GetCurrentDirectory(), $"TestDatabase{dbname}.db");
+    _appSettingsMock.Setup(x => x.DatabaseDirectory).Returns(databaseDirectory);
+
+    _dataStore = new DataStore(_appSettingsMock.Object, _loggerMock.Object);
   }
 }
