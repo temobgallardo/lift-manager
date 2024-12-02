@@ -1,4 +1,7 @@
 ﻿using LiftManager;
+using LiftManager.Core;
+using LiftManager.Data;
+using LiftManager.Domain;
 using LiftManager.Workers;
 using Serilog;
 
@@ -21,10 +24,16 @@ IConfigurationRoot config = new ConfigurationBuilder()
 var appSettings = config.GetSection(nameof(AppSettings)).Get<AppSettings>();
 
 var builder = Host.CreateDefaultBuilder(args)
+    // .UseEnvironment("Production")
     .UseSerilog()
     .ConfigureServices(services =>
     {
-        services.AddScoped<IAppSettings>((sp) => appSettings);
+        services.AddSingleton<IAppSettings>((sp) => appSettings);
+        services.AddSingleton(Log.Logger);
+        services.AddSingleton<LiftManager.Core.ILogger, Logger>();
+        services.AddSingleton<IDataStore, DataStore>();
+        services.AddSingleton<IRepository, Repository>();
+        services.AddSingleton<IOperator, Operator>();
         services.AddHostedService<LiftManagerWorker>();
     })
     .ConfigureAppConfiguration(c =>
@@ -33,4 +42,4 @@ var builder = Host.CreateDefaultBuilder(args)
     });
 
 using IHost host = builder.Build();
-await host.RunAsync();
+host.Run();
