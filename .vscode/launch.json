@@ -12,7 +12,7 @@
       // If you have changed target frameworks, make sure to update the program path.
       "program": "${workspaceFolder}/LiftManager/bin/Debug/net8.0/LiftManager.dll",
       "args": [
-        "--inside=0,0"
+        "--outside=0",
       ],
       "cwd": "${workspaceFolder}/LiftManager",
       // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
