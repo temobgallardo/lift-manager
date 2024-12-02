@@ -6,6 +6,7 @@ namespace LiftManager.Core;
 
 public class Operator : IOperator
 {
+  private bool _disposed = false;
   private ILogger? _logger;
   private IAppSettings _appSettings;
   private IRepository? _repository;
@@ -15,6 +16,7 @@ public class Operator : IOperator
     _logger = logger;
     _appSettings = appSettings;
     _repository = repository;
+    _disposed = true;
   }
 
   /// <summary>
@@ -34,9 +36,9 @@ public class Operator : IOperator
 
     if (currentPosition is null)
     {
-      _logger?.Debug($"No Lift Positioin Available in the DB. Moving to floor={floor}");
+      _logger?.Debug($"No lift losition available in the DB. Moving to floor={floor}");
       // Initial position of lift is at the bottom (floor 0)
-      return await _repository!.SaveLiftPosition(new LiftPosition(DateTime.Now, _appSettings.InitialFloor, floor, OperationType.Inside));
+      return await SimulateAndSaveLift(_appSettings.InitialFloor, floor, OperationType.Inside);
     }
 
     var placeHolder = "{@LiftPosition}";
@@ -48,7 +50,8 @@ public class Operator : IOperator
       return false;
     }
 
-    return await _repository!.SaveLiftPosition(new LiftPosition(DateTime.Now, currentPosition.DestinationFloor!.Value, floor, OperationType.Inside));
+
+    return await SimulateAndSaveLift(_appSettings.InitialFloor, floor, OperationType.Inside);
   }
 
   public async Task<bool> Stop()
@@ -74,26 +77,34 @@ public class Operator : IOperator
     LiftPosition actualFloor = await GetLiftPosition();
     if (actualFloor is null)
     {
-      return await SimulateAndSaveLift(_appSettings.InitialFloor, floor);
+      return await SimulateAndSaveLift(_appSettings.InitialFloor, floor, OperationType.Outside);
     }
 
-    return await SimulateAndSaveLift(actualFloor.DestinationFloor!.Value, floor);
+    return await SimulateAndSaveLift(actualFloor.DestinationFloor!.Value, floor, OperationType.Outside);
   }
 
-  private async Task<bool> SimulateAndSaveLift(int sourceFloor, int destinationFloor)
+  private async Task<bool> SimulateAndSaveLift(int sourceFloor, int destinationFloor, OperationType operationType)
   {
     _logger?.Debug($"Requesting lift to floor={destinationFloor} | current floor={sourceFloor}");
-    LiftPosition newFloorRequest = new(DateTime.Now, sourceFloor, destinationFloor, OperationType.Outside);
+    LiftPosition newFloorRequest = new(DateTime.Now, sourceFloor, destinationFloor, operationType);
     await SimulateLiftMovement(newFloorRequest);
     return await _repository.SaveLiftPosition(newFloorRequest);
   }
 
   public void Dispose()
   {
-    _repository?.Dispose();
-    _repository = null;
-    _logger = null;
+    Dispose(_disposed);
     GC.SuppressFinalize(this);
+  }
+
+  protected virtual void Dispose(bool disposing)
+  {
+    if (disposing)
+    {
+      _repository?.Dispose();
+      _logger = null;
+      _disposed = false;
+    }
   }
 
   private async Task<LiftPosition?> GetLiftPosition()
